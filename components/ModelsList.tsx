@@ -26,13 +26,13 @@ export const ModelsList: React.FC<ModelsListProps> = ({
           <button
             key={model.id}
             className="flex flex-col items-center justify-center 
-              bg-gradient-to-b from-[#4998a455] to-[#4998a4] 
-              dark:bg-gray-900 border border-transparent rounded-2xl shadow-md 
-              transition-all duration-300 ease-in-out 
-              hover:scale-105 hover:ring-4 hover:ring-[#8b5cf6]/30 
-              hover:shadow-[0_0_30px_#8b5cf6] dark:hover:shadow-[0_0_30px_#8b5cf6] 
-              p-12 cursor-pointer aspect-[4/3] w-full h-full min-h-[240px] min-w-0 overflow-hidden"
-            onClick={() => onSelect(model)}
+      bg-white dark:bg-gradient-to-b dark:from-[#4998a455] dark:to-[#4998a4] 
+      border border-transparent rounded-2xl shadow-md 
+      transition-all duration-300 ease-in-out 
+      hover:scale-105 hover:ring-4 hover:ring-[#8b5cf6]/30 
+      hover:shadow-[0_0_30px_#8b5cf6] dark:hover:shadow-[0_0_30px_#8b5cf6] 
+      p-12 cursor-pointer aspect-[4/3] w-full h-full min-h-[240px] min-w-0 overflow-hidden"
+            onClick={() => onSelect(model)} 
             style={{ minHeight: 0 }}
           >
             {model.image ? (
@@ -48,12 +48,11 @@ export const ModelsList: React.FC<ModelsListProps> = ({
               </div>
             )}
 
-           <span
-  className="font-medium text-center text-base 
+            <span
+              className="font-medium text-center text-base 
   w-full flex items-center justify-center overflow-hidden 
   text-ellipsis px-4 min-h-[1.5rem] line-clamp-1 whitespace-nowrap 
   text-black dark:text-white"
-
               title={model.name}
               aria-label={model.name}
             >
