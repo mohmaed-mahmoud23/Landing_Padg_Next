@@ -13,7 +13,7 @@ export default function ModelYearsPage({
   const { modelYears, isLoading, isError } = useModelYears(submodelId);
 
   return (
-    <div className="min-h-screen bg-[radial-gradient(ellipse_at_center,_rgb(16,13,33)_0%,_#0b0a1a_100%)]">
+    <div className="min-h-screen  text-black dark:text-white bg-white dark:bg-[radial-gradient(ellipse_at_center,_rgb(16,13,33)_0%,_#0b0a1a_100%)]">
       <main className="max-w-7xl mx-auto p-8 pt-20 text-white">
         <Link
           href={`/types/${typeId}/models/${modelId}`}
@@ -21,7 +21,9 @@ export default function ModelYearsPage({
         >
           ← Back to Submodels
         </Link>
-        <h1 className="text-3xl font-bold mb-8">Model Years</h1>
+        <h1 className="text-3xl font-bold mb-8  text-black dark:text-white">
+          Model Years
+        </h1>
         {isLoading ? (
           <div>Loading model years...</div>
         ) : isError ? (

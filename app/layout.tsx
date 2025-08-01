@@ -20,11 +20,25 @@ export default function RootLayout({
     const handleScroll = () => setScrollY(window.scrollY);
     window.addEventListener("scroll", handleScroll);
     setIsVisible(true);
+
+    // ✅ تحديد الوضع من localStorage أو media query
+    const storedTheme = localStorage.getItem("theme");
+    const prefersDark =
+      storedTheme === "dark" ||
+      (!storedTheme &&
+        window.matchMedia("(prefers-color-scheme: dark)").matches);
+
+    setIsDarkMode(prefersDark);
+    document.documentElement.classList.toggle("dark", prefersDark);
+
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
   const toggleTheme = () => {
-    setIsDarkMode(!isDarkMode);
+    const newMode = !isDarkMode;
+    setIsDarkMode(newMode);
+    localStorage.setItem("theme", newMode ? "dark" : "light");
+    document.documentElement.classList.toggle("dark", newMode);
   };
 
   const [query, setQuery] = useState("");
@@ -68,6 +82,7 @@ export default function RootLayout({
       setShowDropdown(false);
       return;
     }
+
     timeoutRef.current = setTimeout(async () => {
       try {
         const res = await searchApi(value);
@@ -81,15 +96,15 @@ export default function RootLayout({
       }
     }, 300);
   };
-
   return (
-    <html lang="en">
-      <body>
-        <header className="fixed top-6 left-1/2 transform -translate-x-1/2 z-50 w-full max-w-6xl px-6  ">
+    <html lang="en" className={isDarkMode ? "dark" : ""}>
+      <body className={`transition-colors duration-300 ${themeClasses.background}`}>
+        <header className="fixed top-6 left-1/2 transform -translate-x-1/2 z-50 w-full max-w-6xl px-6">
           <nav
             className={`${themeClasses.navBg} rounded-2xl px-6 py-4 shadow-2xl transition-all duration-700`}
           >
             <div className="flex items-center justify-between">
+              {/* Logo */}
               <div className="flex items-center space-x-3">
                 <div className="relative">
                   <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-purple-500 rounded-xl blur opacity-75"></div>
@@ -101,7 +116,7 @@ export default function RootLayout({
                   <h1
                     className={`text-xl font-bold bg-gradient-to-r ${themeClasses.gradient} bg-clip-text text-transparent`}
                   >
-                    <Link href="/"> AutoShield AI</Link>
+                    <Link href="/">AutoShield AI</Link>
                   </h1>
                   <p className={`text-xs ${themeClasses.textMuted}`}>
                     Next-Gen Protection
@@ -109,12 +124,10 @@ export default function RootLayout({
                 </div>
               </div>
 
+              {/* Navigation */}
               <div className="hidden md:flex items-center space-x-8">
                 <nav className="flex space-x-6">
-                  {[
-                    { name: "About", href: "/about" },
-                 
-                  ].map((link) => (
+                  {[{ name: "About", href: "/about" }].map((link) => (
                     <Link
                       key={link.name}
                       href={link.href}

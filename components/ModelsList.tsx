@@ -1,6 +1,6 @@
-import React from 'react';
-import { useModels } from '../hooks/useModels';
-import type { Model } from '../lib/types';
+import React from "react";
+import { useModels } from "../hooks/useModels";
+import type { Model } from "../lib/types";
 
 interface ModelsListProps {
   typeId: string;
@@ -8,7 +8,11 @@ interface ModelsListProps {
   renderItem?: (model: Model, children: React.ReactNode) => React.ReactNode;
 }
 
-export const ModelsList: React.FC<ModelsListProps> = ({ typeId, onSelect, renderItem }) => {
+export const ModelsList: React.FC<ModelsListProps> = ({
+  typeId,
+  onSelect,
+  renderItem,
+}) => {
   const { models, isLoading, isError } = useModels(typeId);
 
   if (isLoading) return <div>Loading models...</div>;
@@ -21,7 +25,13 @@ export const ModelsList: React.FC<ModelsListProps> = ({ typeId, onSelect, render
         const card = (
           <button
             key={model.id}
-              className="flex flex-col items-center justify-center  bg-gradient-to-b from-[#4998a455] to-[#4998a4]  dark:bg-gray-900 border border-transparent rounded-2xl shadow-md transition-all duration-300 ease-in-out hover:scale-105 hover:ring-4 hover:ring-[#8b5cf6]/30 hover:shadow-[0_0_30px_#8b5cf6]  dark:hover:shadow-[0_0_30px_#8b5cf6] p-12 cursor-pointer aspect-[4/3] w-full h-full min-h-[240px] min-w-0 overflow-hidden"
+            className="flex flex-col items-center justify-center 
+              bg-gradient-to-b from-[#4998a455] to-[#4998a4] 
+              dark:bg-gray-900 border border-transparent rounded-2xl shadow-md 
+              transition-all duration-300 ease-in-out 
+              hover:scale-105 hover:ring-4 hover:ring-[#8b5cf6]/30 
+              hover:shadow-[0_0_30px_#8b5cf6] dark:hover:shadow-[0_0_30px_#8b5cf6] 
+              p-12 cursor-pointer aspect-[4/3] w-full h-full min-h-[240px] min-w-0 overflow-hidden"
             onClick={() => onSelect(model)}
             style={{ minHeight: 0 }}
           >
@@ -29,16 +39,21 @@ export const ModelsList: React.FC<ModelsListProps> = ({ typeId, onSelect, render
               <img
                 src={model.image}
                 alt={model.name}
-                className="w-full h-20 object-contain mb-6 rounded flex-shrink-0"
-                onError={(e) => (e.currentTarget.style.display = 'none')}
+                className="w-full h-40 object-contain mb-6 rounded flex-shrink-0"
+                onError={(e) => (e.currentTarget.style.display = "none")}
               />
             ) : (
               <div className="w-20 h-20 flex items-center justify-center bg-gray-100 dark:bg-gray-800 mb-6 rounded flex-shrink-0">
                 <span className="text-white text-4xl">🚗</span>
               </div>
             )}
-            <span
-              className="font-medium text-center text-base mt-4 w-full flex items-center justify-center overflow-hidden text-ellipsis px-4 min-h-[1.5rem] line-clamp-1 whitespace-nowrap"
+
+           <span
+  className="font-medium text-center text-base 
+  w-full flex items-center justify-center overflow-hidden 
+  text-ellipsis px-4 min-h-[1.5rem] line-clamp-1 whitespace-nowrap 
+  text-black dark:text-white"
+
               title={model.name}
               aria-label={model.name}
             >
@@ -50,4 +65,4 @@ export const ModelsList: React.FC<ModelsListProps> = ({ typeId, onSelect, render
       })}
     </div>
   );
-}; 
+};

@@ -33,16 +33,17 @@ export const PartsList: React.FC<PartsListProps> = ({ modelYearId, versionId }) 
               <span className="text-white text-2xl">🔩</span>
             </div>
           )}
-          <span className="font-medium text-center text-sm mt-1">
+          <span className="font-medium text-center text-sm mt-1 text-black dark:text-white">
             {part.name}
           </span>
           {part.dimensions && (
-            <span className="text-xs text-gray-500 mt-1">
+            <span className="text-xs mt-1 text-gray-700 dark:text-gray-400">
               {part.dimensions}
             </span>
           )}
+
           {typeof part.points === "number" && (
-            <span className="text-xs text-white mt-1">
+            <span className="text-xs mt-1 text-black dark:text-white">
               Points: {part.points}
             </span>
           )}

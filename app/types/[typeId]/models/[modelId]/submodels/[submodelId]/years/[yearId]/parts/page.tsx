@@ -17,7 +17,7 @@ export default function PartsPage({
   const router = useRouter();
 
   return (
-    <div className="min-h-screen bg-[radial-gradient(ellipse_at_center,_rgb(16,13,33)_0%,_#0b0a1a_100%)]">
+    <div className="min-h-screen  text-black dark:text-white bg-white dark:bg-[radial-gradient(ellipse_at_center,_rgb(16,13,33)_0%,_#0b0a1a_100%)]">
       <main className="max-w-7xl mx-auto p-8 pt-20 text-white">
         <button
           onClick={() => router.back()}
@@ -25,7 +25,9 @@ export default function PartsPage({
         >
           ← Back to Model Year
         </button>
-        <h1 className="text-3xl font-bold mb-8">Parts</h1>
+        <h1 className="text-3xl font-bold mb-8   text-black dark:text-white">
+          Parts
+        </h1>
         <PartsList modelYearId={yearId} />
       </main>
     </div>

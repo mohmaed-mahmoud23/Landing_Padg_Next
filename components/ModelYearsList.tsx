@@ -1,24 +1,32 @@
-import React from 'react';
-import { useModelYears } from '../hooks/useModelYears';
-import type { ModelYear } from '../lib/types';
+import React from "react";
+import { useModelYears } from "../hooks/useModelYears";
+import type { ModelYear } from "../lib/types";
 
 interface ModelYearsListProps {
   submodelId: string;
   onSelect: (modelYear: ModelYear) => void;
-  renderItem?: (modelYear: ModelYear, children: React.ReactNode) => React.ReactNode;
+  renderItem?: (
+    modelYear: ModelYear,
+    children: React.ReactNode
+  ) => React.ReactNode;
 }
 
-export const ModelYearsList: React.FC<ModelYearsListProps> = ({ submodelId, onSelect, renderItem }) => {
+export const ModelYearsList: React.FC<ModelYearsListProps> = ({
+  submodelId,
+  onSelect,
+  renderItem,
+}) => {
   const { modelYears, isLoading, isError } = useModelYears(submodelId);
 
   if (isLoading) return <div>Loading model years...</div>;
   if (isError) return <div>Error loading model years.</div>;
-  if (!modelYears || modelYears.length === 0) return <div>No model years found.</div>;
+  if (!modelYears || modelYears.length === 0)
+    return <div>No model years found.</div>;
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-8 w-full">
       {modelYears.map((modelYear) => {
-        console.log('ModelYear:', modelYear);
+        console.log("ModelYear:", modelYear);
         const card = (
           <button
             key={modelYear.id}
@@ -27,7 +35,7 @@ export const ModelYearsList: React.FC<ModelYearsListProps> = ({ submodelId, onSe
             style={{ minHeight: 0 }}
           >
             {modelYear.image ? (
-              <img 
+              <img
                 src={modelYear.image}
                 alt={String(modelYear.name)}
                 className="w-full h-20 object-contain mb-6 rounded flex-shrink-0"
@@ -39,7 +47,7 @@ export const ModelYearsList: React.FC<ModelYearsListProps> = ({ submodelId, onSe
               </div>
             )}
             <span
-              className="font-medium text-center text-base mt-4 w-full flex items-center justify-center overflow-hidden text-ellipsis px-4 min-h-[1.5rem] line-clamp-1 whitespace-nowrap"
+              className="text-xs font-medium text-black dark:text-white text-center px-1 whitespace-nowrap overflow-hidden text-ellipsis line-clamp-1 leading-none tracking-tight"
               title={String(modelYear.name)}
               aria-label={String(modelYear.name)}
             >
@@ -51,4 +59,4 @@ export const ModelYearsList: React.FC<ModelYearsListProps> = ({ submodelId, onSe
       })}
     </div>
   );
-}; 
+};
