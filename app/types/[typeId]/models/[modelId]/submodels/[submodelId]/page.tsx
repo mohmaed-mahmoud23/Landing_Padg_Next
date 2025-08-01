@@ -13,7 +13,7 @@ export default function ModelYearsPage({
   const { modelYears, isLoading, isError } = useModelYears(submodelId);
 
   return (
-    <div className="min-h-screen  text-black dark:text-white bg-white dark:bg-[radial-gradient(ellipse_at_center,_rgb(16,13,33)_0%,_#0b0a1a_100%)]">
+    <div className="min-h-screen  text-black dark:text-white bg-gradient-to-b from-[#e5f1fc] to-[#f2f4ff]  bg-white dark:bg-[radial-gradient(ellipse_at_center,_rgb(16,13,33)_0%,_#0b0a1a_100%)]">
       <main className="max-w-7xl mx-auto p-8 pt-20 text-white">
         <Link
           href={`/types/${typeId}/models/${modelId}`}

@@ -18,8 +18,13 @@ export default function YearStepPage({ params }: { params: { typeId: string; mod
   }, [isLoading, isError, versions, typeId, modelId, submodelId, yearId, router]);
 
   return (
-    <main className="max-w-7xl mx-auto p-8">
-      <Link href={`/types/${typeId}/models/${modelId}/submodels/${submodelId}`} className="text-blue-600 hover:underline mb-6 inline-block">← Back to Model Years</Link>
+    <main className="max-w-7xl mx-auto p-8 bg-gradient-to-b from-[#e5f1fc] to-[#f2f4ff] ">
+      <Link
+        href={`/types/${typeId}/models/${modelId}/submodels/${submodelId}`}
+        className="text-blue-600 hover:underline mb-6 inline-block"
+      >
+        ← Back to Model Years
+      </Link>
       <h1 className="text-3xl font-bold mb-8">Versions</h1>
       {isLoading ? (
         <div>Loading versions...</div>
@@ -29,7 +34,9 @@ export default function YearStepPage({ params }: { params: { typeId: string; mod
         <VersionsList
           modelYearId={yearId}
           onSelect={(version) => {
-            router.push(`/types/${typeId}/models/${modelId}/submodels/${submodelId}/years/${yearId}/versions/${version.id}/parts`);
+            router.push(
+              `/types/${typeId}/models/${modelId}/submodels/${submodelId}/years/${yearId}/versions/${version.id}/parts`
+            );
           }}
         />
       )}

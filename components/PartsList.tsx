@@ -1,13 +1,16 @@
-import React from 'react';
-import { useParts } from '../hooks/useParts';
-import type { Part } from '../lib/types';
+import React from "react";
+import { useParts } from "../hooks/useParts";
+import type { Part } from "../lib/types";
 
 interface PartsListProps {
   modelYearId: string;
   versionId?: string;
 }
 
-export const PartsList: React.FC<PartsListProps> = ({ modelYearId, versionId }) => {
+export const PartsList: React.FC<PartsListProps> = ({
+  modelYearId,
+  versionId,
+}) => {
   const { parts, isLoading, isError } = useParts(modelYearId, versionId);
 
   if (isLoading) return <div>Loading parts...</div>;
@@ -51,4 +54,4 @@ export const PartsList: React.FC<PartsListProps> = ({ modelYearId, versionId }) 
       ))}
     </div>
   );
-}; 
+};

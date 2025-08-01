@@ -6,6 +6,7 @@ import { search as searchApi } from "../lib/api";
 import { useRouter } from "next/navigation";
 import { Moon, Shield, Sun } from "lucide-react";
 import { Button } from "../components/ui/button";
+import Image from "next/image";
 
 export default function RootLayout({
   children,
@@ -98,7 +99,9 @@ export default function RootLayout({
   };
   return (
     <html lang="en" className={isDarkMode ? "dark" : ""}>
-      <body className={`transition-colors duration-300 ${themeClasses.background}`}>
+      <body
+        className={`transition-colors duration-300 ${themeClasses.background}`}
+      >
         <header className="fixed top-6 left-1/2 transform -translate-x-1/2 z-50 w-full max-w-6xl px-6">
           <nav
             className={`${themeClasses.navBg} rounded-2xl px-6 py-4 shadow-2xl transition-all duration-700`}
@@ -114,19 +117,24 @@ export default function RootLayout({
                 </div>
                 <div>
                   <h1
-                    className={`text-xl font-bold bg-gradient-to-r ${themeClasses.gradient} bg-clip-text text-transparent`}
+                    className={`flex items-center space-x-2 text-xl font-bold bg-gradient-to-r ${themeClasses.gradient} bg-clip-text text-transparent`}
                   >
-                    <Link href="/">AutoShield AI</Link>
+                    <Link href="/">
+                      <Image
+                        src="/images/nav.webp"
+                        alt="Logo"
+                        width={150}
+                        height={40}
+                      />
+                    </Link>
                   </h1>
-                  <p className={`text-xs ${themeClasses.textMuted}`}>
-                    Next-Gen Protection
-                  </p>
                 </div>
               </div>
 
               {/* Navigation */}
-              <div className="hidden md:flex items-center space-x-8">
-                <nav className="flex space-x-6">
+              <div className="flex flex-row items-center justify-center space-x-4 md:space-x-8">
+                {/* Navigation */}
+                <nav className="flex space-x-4 md:space-x-6">
                   {[{ name: "About", href: "/about" }].map((link) => (
                     <Link
                       key={link.name}
@@ -140,7 +148,7 @@ export default function RootLayout({
                 </nav>
 
                 {/* Theme Toggle */}
-                <div className="flex items-center space-x-3">
+                <div>
                   <button
                     onClick={toggleTheme}
                     className={`relative w-14 h-7 ${
@@ -164,10 +172,6 @@ export default function RootLayout({
                     </div>
                   </button>
                 </div>
-
-                <Button className="bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 border-0 rounded-xl px-6 shadow-lg hover:shadow-xl transition-all duration-300 text-white">
-                  Get Started
-                </Button>
               </div>
             </div>
           </nav>

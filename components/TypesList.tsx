@@ -21,13 +21,22 @@ export const TypesList: React.FC<TypesListProps> = ({
   if (!types || types.length === 0) return <div>No types found.</div>;
 
   return (
-    <>
+  <>
+    <div className="w-full rounded-2xl p-4 
+      dark:bg-transparent transition-colors duration-300">
+      
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-8 w-full">
         {types.map((type) => {
           const card = (
             <button
               key={type.id}
-              className="flex flex-col items-center justify-center  bg-gradient-to-b from-[#4998a455] to-[#4998a4]  dark:bg-gray-900 border border-transparent rounded-2xl shadow-md transition-all duration-300 ease-in-out hover:scale-105 hover:ring-4 hover:ring-[#8b5cf6]/30 hover:shadow-[0_0_30px_#8b5cf6]  dark:hover:shadow-[0_0_30px_#8b5cf6] p-12 cursor-pointer aspect-[4/3] w-full h-full min-h-[240px] min-w-0 overflow-hidden"
+              className="flex flex-col items-center justify-center 
+                bg-white dark:bg-gradient-to-b dark:from-[#4998a455] dark:to-[#4998a4] 
+                border border-transparent rounded-2xl shadow-md 
+                transition-all duration-300 ease-in-out 
+                hover:scale-105 hover:ring-4 hover:ring-[#8b5cf6]/30 
+                hover:shadow-[0_0_30px_#8b5cf6] dark:hover:shadow-[0_0_30px_#8b5cf6] 
+                p-12 cursor-pointer aspect-[4/3] w-full h-full min-h-[240px] min-w-0 overflow-hidden"
               onClick={() => onSelect(type)}
               style={{ minHeight: 0 }}
             >
@@ -41,11 +50,11 @@ export const TypesList: React.FC<TypesListProps> = ({
                 />
               ) : (
                 <div className="w-20 h-20 flex items-center justify-center bg-gray-100 dark:bg-gray-800 mb-6 rounded flex-shrink-0">
-                  <span className="  text-white text-4xl">🚗</span>
+                  <span className="text-white text-4xl">🚗</span>
                 </div>
               )}
               <span
-                className="font-medium text-center text-base  w-full flex items-center justify-center overflow-hidden text-ellipsis px-4 min-h-[1.5rem] line-clamp-1 whitespace-nowrap"
+                className="font-medium text-center text-base w-full flex items-center justify-center overflow-hidden text-ellipsis px-4 min-h-[1.5rem] line-clamp-1 whitespace-nowrap"
                 title={type.name}
                 aria-label={type.name}
               >
@@ -56,7 +65,10 @@ export const TypesList: React.FC<TypesListProps> = ({
           return renderItem ? renderItem(type, card) : card;
         })}
       </div>
-      <Pagination links={links} onPageChange={onPageChange} />
-    </>
-  );
+    </div>
+
+    <Pagination links={links} onPageChange={onPageChange} />
+  </>
+);
+
 };
