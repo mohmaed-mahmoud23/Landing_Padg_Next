@@ -16,7 +16,7 @@ export const ModelYearsList: React.FC<ModelYearsListProps> = ({
   onSelect,
   renderItem,
 }) => {
-  const { modelYears, isLoading, isError } = useModelYears(submodelId);
+const { data: modelYears, isLoading, isError } = useModelYears(submodelId);
 
   if (isLoading) return <div>Loading model years...</div>;
   if (isError) return <div>Error loading model years.</div>;

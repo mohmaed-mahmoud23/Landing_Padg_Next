@@ -1,4 +1,5 @@
-import useSWR from 'swr';
+// hooks/useTypes.ts
+import { useQuery } from '@tanstack/react-query';
 import { getTypes } from '../lib/api';
 import type { Type } from '../lib/types';
 
@@ -16,12 +17,18 @@ export interface PaginationLink {
 }
 
 export function useTypes(page: number) {
-  const { data, error, isLoading } = useSWR(['types', page], () => getTypes(page));
+  const { data, error, isPending, isError } = useQuery({
+    queryKey: ['types', page],
+    queryFn: () => getTypes(page),
+    staleTime: 1000 * 60 * 5, // 5 دقائق كاش
+    keepPreviousData: true,   // علشان يفضل يعرض الصفحة القديمة أثناء تحميل الجديدة
+  });
+
   return {
     types: data?.data as Type[] || [],
     links: data?.links || [],
     meta: data?.meta || undefined,
-    isLoading,
-    isError: !!error,
+    isLoading: isPending,
+    isError,
   };
-} 
+}

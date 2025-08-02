@@ -11,7 +11,7 @@ export const PartsList: React.FC<PartsListProps> = ({
   modelYearId,
   versionId,
 }) => {
-  const { parts, isLoading, isError } = useParts(modelYearId, versionId);
+  const { data: parts, isLoading, isError } = useParts(modelYearId, versionId);
 
   if (isLoading) return <div>Loading parts...</div>;
   if (isError) return <div>Error loading parts.</div>;

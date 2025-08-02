@@ -14,9 +14,9 @@ interface SubmodelsListProps {
 export const SubmodelsList: React.FC<SubmodelsListProps> = ({
   modelId,
   onSelect,
-  renderItem,
+  renderItem, 
 }) => {
-  const { submodels, isLoading, isError } = useSubmodels(modelId);
+  const { data: submodels, isLoading, isError } = useSubmodels(modelId);
 
   if (isLoading) return <div>Loading submodels...</div>;
   if (isError) return <div>Error loading submodels.</div>;

@@ -1,16 +1,14 @@
-import useSWR from 'swr';
+// hooks/useParts.ts
+import { useQuery } from '@tanstack/react-query';
 import { getParts } from '../lib/api';
 import type { Part } from '../lib/types';
 
 export function useParts(modelYearId: string | undefined, versionId?: string) {
-  const shouldFetch = Boolean(modelYearId);
-  const { data, error, isLoading } = useSWR(
-    shouldFetch ? ['parts', modelYearId, versionId] : null,
-    () => getParts(modelYearId!, versionId)
-  );
-  return {
-    parts: data,
-    isLoading,
-    isError: !!error,
-  };
-} 
+  return useQuery<Part[]>({
+    queryKey: ['parts', modelYearId, versionId],
+    queryFn: () => getParts(modelYearId!, versionId),
+    enabled: !!modelYearId, // متعملش fetch إلا لما يكون فيه modelYearId
+    staleTime: 5 * 60 * 1000, // البيانات تفضل fresh لمدة 5 دقايق
+    cacheTime: 30 * 60 * 1000, // الكاش يفضل 30 دقيقة بعد عدم الاستخدام
+  });
+}

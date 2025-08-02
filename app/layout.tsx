@@ -1,4 +1,5 @@
 "use client";
+
 import "./globals.css";
 import React, { useState, useRef, useEffect } from "react";
 import Link from "next/link";
@@ -8,11 +9,17 @@ import { Moon, Shield, Sun } from "lucide-react";
 import { Button } from "../components/ui/button";
 import Image from "next/image";
 
+// 🟡 إضافة React Query
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+
 export default function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const [queryClient] = useState(() => new QueryClient()); // ⬅️
+
+  // كل كودك الحالي زي ما هو ...
   const [scrollY, setScrollY] = useState(0);
   const [isVisible, setIsVisible] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(true);
@@ -22,7 +29,6 @@ export default function RootLayout({
     window.addEventListener("scroll", handleScroll);
     setIsVisible(true);
 
-    // ✅ تحديد الوضع من localStorage أو media query
     const storedTheme = localStorage.getItem("theme");
     const prefersDark =
       storedTheme === "dark" ||
@@ -97,88 +103,91 @@ export default function RootLayout({
       }
     }, 300);
   };
+
   return (
     <html lang="en" className={isDarkMode ? "dark" : ""}>
       <body
         className={`transition-colors duration-300 ${themeClasses.background}`}
       >
-        <header className="fixed top-6 left-1/2 transform -translate-x-1/2 z-50 w-full max-w-6xl px-6">
-          <nav
-            className={`${themeClasses.navBg} rounded-2xl px-6 py-4 shadow-2xl transition-all duration-700`}
-          >
-            <div className="flex items-center justify-between">
-              {/* Logo */}
-              <div className="flex items-center space-x-3">
-                <div className="relative">
-                  <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-purple-500 rounded-xl blur opacity-75"></div>
-                  <div className="relative bg-gradient-to-r from-blue-500 to-purple-500 p-2 rounded-xl">
-                    <Shield className="h-6 w-6 text-white" />
+        {/* 🟢 لفّ التطبيق كله بـ QueryClientProvider */}
+        <QueryClientProvider client={queryClient}>
+          <header className="fixed top-6 left-1/2 transform -translate-x-1/2 z-50 w-full max-w-6xl px-6">
+            <nav
+              className={`${themeClasses.navBg} rounded-2xl px-6 py-4 shadow-2xl transition-all duration-700`}
+            >
+              <div className="flex items-center justify-between">
+                {/* Logo */}
+                <div className="flex items-center space-x-3">
+                  <div className="relative">
+                    <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-purple-500 rounded-xl blur opacity-75"></div>
+                    <div className="relative bg-gradient-to-r from-blue-500 to-purple-500 p-2 rounded-xl">
+                      <Shield className="h-6 w-6 text-white" />
+                    </div>
+                  </div>
+                  <div>
+                    <h1
+                      className={`flex items-center space-x-2 text-xl font-bold bg-gradient-to-r ${themeClasses.gradient} bg-clip-text text-transparent`}
+                    >
+                      <Link href="/">
+                        <Image
+                          src="/images/nav.webp"
+                          alt="Logo"
+                          width={150}
+                          height={40}
+                        />
+                      </Link>
+                    </h1>
                   </div>
                 </div>
-                <div>
-                  <h1
-                    className={`flex items-center space-x-2 text-xl font-bold bg-gradient-to-r ${themeClasses.gradient} bg-clip-text text-transparent`}
-                  >
-                    <Link href="/">
-                      <Image
-                        src="/images/nav.webp"
-                        alt="Logo"
-                        width={150}
-                        height={40}
-                      />
-                    </Link>
-                  </h1>
-                </div>
-              </div>
 
-              {/* Navigation */}
-              <div className="flex flex-row items-center justify-center space-x-4 md:space-x-8">
                 {/* Navigation */}
-                <nav className="flex space-x-4 md:space-x-6">
-                  {[{ name: "About", href: "/about" }].map((link) => (
-                    <Link
-                      key={link.name}
-                      href={link.href}
-                      className={`${themeClasses.textSecondary} hover:${themeClasses.text} transition-all duration-300 relative group`}
-                    >
-                      {link.name}
-                      <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-gradient-to-r from-blue-500 to-purple-500 group-hover:w-full transition-all duration-300"></span>
-                    </Link>
-                  ))}
-                </nav>
+                <div className="flex flex-row items-center justify-center space-x-4 md:space-x-8">
+                  <nav className="flex space-x-4 md:space-x-6">
+                    {[{ name: "About", href: "/about" }].map((link) => (
+                      <Link
+                        key={link.name}
+                        href={link.href}
+                        className={`${themeClasses.textSecondary} hover:${themeClasses.text} transition-all duration-300 relative group`}
+                      >
+                        {link.name}
+                        <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-gradient-to-r from-blue-500 to-purple-500 group-hover:w-full transition-all duration-300"></span>
+                      </Link>
+                    ))}
+                  </nav>
 
-                {/* Theme Toggle */}
-                <div>
-                  <button
-                    onClick={toggleTheme}
-                    className={`relative w-14 h-7 ${
-                      isDarkMode ? "bg-slate-700" : "bg-slate-300"
-                    } rounded-full transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
-                      isDarkMode
-                        ? "focus:ring-offset-black"
-                        : "focus:ring-offset-white"
-                    }`}
-                  >
-                    <div
-                      className={`absolute top-0.5 left-0.5 w-6 h-6 bg-white rounded-full shadow-lg transform transition-all duration-300 flex items-center justify-center ${
-                        isDarkMode ? "translate-x-0" : "translate-x-7"
+                  {/* Theme Toggle */}
+                  <div>
+                    <button
+                      onClick={toggleTheme}
+                      className={`relative w-14 h-7 ${
+                        isDarkMode ? "bg-slate-700" : "bg-slate-300"
+                      } rounded-full transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
+                        isDarkMode
+                          ? "focus:ring-offset-black"
+                          : "focus:ring-offset-white"
                       }`}
                     >
-                      {isDarkMode ? (
-                        <Moon className="h-3 w-3 text-slate-700" />
-                      ) : (
-                        <Sun className="h-3 w-3 text-yellow-500" />
-                      )}
-                    </div>
-                  </button>
+                      <div
+                        className={`absolute top-0.5 left-0.5 w-6 h-6 bg-white rounded-full shadow-lg transform transition-all duration-300 flex items-center justify-center ${
+                          isDarkMode ? "translate-x-0" : "translate-x-7"
+                        }`}
+                      >
+                        {isDarkMode ? (
+                          <Moon className="h-3 w-3 text-slate-700" />
+                        ) : (
+                          <Sun className="h-3 w-3 text-yellow-500" />
+                        )}
+                      </div>
+                    </button>
+                  </div>
                 </div>
               </div>
-            </div>
-          </nav>
-        </header>
+            </nav>
+          </header>
 
-        {/* ✅ Main Content */}
-        {children}
+          {/* ✅ Main Content */}
+          {children}
+        </QueryClientProvider>
       </body>
     </html>
   );

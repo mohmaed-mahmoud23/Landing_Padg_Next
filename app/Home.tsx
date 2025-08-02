@@ -158,8 +158,6 @@ export default function Home() {
         ></div>
       </div>
 
-      
-
       {/* Hero Section */}
       <section className="relative z-10 pt-32 pb-20 px-6">
         <div className="container mx-auto text-center">
