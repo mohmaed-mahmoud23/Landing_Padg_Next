@@ -14,6 +14,7 @@ export interface PaginationLink {
   url: string | null;
   label: string;
   active: boolean;
+
 }
 
 export function useTypes(page: number) {
@@ -32,3 +33,4 @@ export function useTypes(page: number) {
     isError,
   };
 }
+  

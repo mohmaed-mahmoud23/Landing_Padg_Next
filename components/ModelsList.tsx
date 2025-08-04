@@ -1,4 +1,7 @@
-import React from "react";
+"use client";
+
+import React, { memo, useMemo, useCallback } from "react";
+import Image from "next/image";
 import { useModels } from "../hooks/useModels";
 import type { Model } from "../lib/types";
 
@@ -7,58 +10,91 @@ interface ModelsListProps {
   onSelect: (model: Model) => void;
   renderItem?: (model: Model, children: React.ReactNode) => React.ReactNode;
 }
-export const ModelsList: React.FC<ModelsListProps> = ({
-  typeId,
-  onSelect,
-  renderItem,
-}) => {
-  const { data: models, isLoading, isError } = useModels(typeId); 
 
-  if (isLoading) return <div>Loading models...</div>;
-  if (isError) return <div>Error loading models.</div>;
-  if (!models || models.length === 0) return <div>No models found.</div>;
+export const ModelsList: React.FC<ModelsListProps> = memo(
+  ({ typeId, onSelect, renderItem }) => {
+    const { data: models, isLoading, isError } = useModels(typeId);
 
-  return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-8 w-full">
-      {models.map((model) => {
+    const handleImageError = useCallback(
+      (e: React.SyntheticEvent<HTMLImageElement>) => {
+        e.currentTarget.style.display = "none";
+      },
+      []
+    );
+
+    const renderCard = useCallback(
+      (model: Model) => {
         const card = (
           <button
-            key={model.id}
-            className="flex flex-col items-center justify-center 
-              bg-white dark:bg-gradient-to-b dark:from-[#4998a455] dark:to-[#4998a4] 
-              border border-transparent rounded-2xl shadow-md 
-              transition-all duration-300 ease-in-out 
-              hover:scale-105 hover:ring-4 hover:ring-[#8b5cf6]/30 
-              hover:shadow-[0_0_30px_#8b5cf6] dark:hover:shadow-[0_0_30px_#8b5cf6] 
-              p-12 cursor-pointer aspect-[4/3] w-full h-full min-h-[240px] min-w-0 overflow-hidden"
+            className="flex flex-col items-center justify-center
+              bg-white dark:bg-gradient-to-b dark:from-[#4998a455] dark:to-[#4998a4]
+              border border-transparent rounded-2xl shadow-md
+              transition-transform duration-300 ease-in-out
+              hover:scale-105 hover:ring-4 hover:ring-[#8b5cf6]/30
+              hover:shadow-[0_0_30px_#8b5cf6] dark:hover:shadow-[0_0_30px_#8b5cf6]
+              p-12 cursor-pointer aspect-[4/3] w-full h-full min-h-[240px]"
             onClick={() => onSelect(model)}
+            aria-label={`Select model ${model.name}`}
           >
             {model.image ? (
-              <img
-                src={model.image}
-                alt={model.name}
-                className="w-full h-40 object-contain mb-6 rounded flex-shrink-0"
-                onError={(e) => (e.currentTarget.style.display = "none")}
-              />
+              <div className="w-full h-40 relative mb-6 rounded">
+                <Image
+                  src={model.image}
+                  alt={model.name}
+                  fill
+                  className="object-contain rounded"
+                  onError={(e) => handleImageError(e as any)}
+                />
+              </div>
             ) : (
-              <div className="w-20 h-20 flex items-center justify-center bg-gray-100 dark:bg-gray-800 mb-6 rounded flex-shrink-0">
+              <div className="w-20 h-20 flex items-center justify-center bg-gray-100 dark:bg-gray-800 mb-6 rounded">
                 <span className="text-white text-4xl">🚗</span>
               </div>
             )}
-            <span
-              className="font-medium text-center text-base 
-                w-full flex items-center justify-center overflow-hidden 
-                text-ellipsis px-4 min-h-[1.5rem] line-clamp-1 whitespace-nowrap 
-                text-black dark:text-white"
+            <p
+              className="font-medium text-center text-base w-full px-4 mt-3 leading-snug break-words text-black dark:text-white"
               title={model.name}
-              aria-label={model.name}
             >
               {model.name}
-            </span>
+            </p>
           </button>
         );
+
         return renderItem ? renderItem(model, card) : card;
-      })}
-    </div>
-  );
-};
+      },
+      [onSelect, renderItem, handleImageError]
+    );
+
+    const content = useMemo(() => {
+      if (isLoading)
+        return (
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            {Array.from({ length: 8 }).map((_, i) => (
+              <div
+                key={i}
+                className="h-48 bg-gray-200 dark:bg-gray-700 rounded-xl animate-pulse"
+              />
+            ))}
+          </div>
+        );
+
+      if (isError)
+        return <div className="text-red-500 font-medium">Error loading models.</div>;
+
+      if (!models || models.length === 0)
+        return <div className="text-gray-500">No models found.</div>;
+
+      return (
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-8 w-full">
+          {models.map((model) => (
+            <div key={model.id}>{renderCard(model)}</div>
+          ))}
+        </div>
+      );
+    }, [isLoading, isError, models, renderCard]);
+
+    return content;
+  }
+);
+
+ModelsList.displayName = "ModelsList";
