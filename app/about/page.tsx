@@ -1,69 +1,71 @@
 "use client";
 
-import React, { useState, useCallback, memo } from "react";
+import React, { useState, useRef } from "react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useTypes, fetchTypes } from "../../hooks/useTypes";
+import { search as searchApi } from "../../lib/api";
 import type { Type } from "../../lib/types";
 import { useQueryClient } from "@tanstack/react-query";
+import { useRouter } from "next/navigation";
 
 const TypesList = dynamic(
-  () => import("../../components/TypesList").then((m) => memo(m.TypesList)),
-  {
-    ssr: false,
-    loading: () => (
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-8">
-        {Array.from({ length: 8 }).map((_, i) => (
-          <div
-            key={i}
-            className="flex flex-col items-center justify-center bg-white dark:bg-gray-800 rounded-2xl shadow-md p-8 aspect-[4/3] animate-pulse"
-          >
-            <div className="w-full h-32 bg-gray-300 dark:bg-gray-700 rounded mb-4"></div>
-            <div className="h-4 w-2/3 bg-gray-300 dark:bg-gray-700 rounded"></div>
-          </div>
-        ))}
-      </div>
-    ),
-  }
+  () => import("../../components/TypesList").then((m) => m.TypesList),
+  { ssr: false }
 );
-
-function ErrorFallback({ onRetry }: { onRetry: () => void }) {
-  return (
-    <div className="text-center p-4 text-red-500">
-      <p className="mb-2">Error loading vehicle types.</p>
-      <button
-        onClick={onRetry}
-        className="text-blue-500 underline hover:text-blue-700"
-      >
-        Retry
-      </button>
-    </div>
-  );
-}
 
 export default function HomePageClient() {
   const [page, setPage] = useState(1);
-  const [searchTerm, setSearchTerm] = useState(""); // ✅ Added
+  const [query, setQuery] = useState("");
+  const [results, setResults] = useState<any[]>([]);
+  const [showDropdown, setShowDropdown] = useState(false);
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  const router = useRouter();
   const queryClient = useQueryClient();
-
-  React.useEffect(() => {
-    queryClient.prefetchQuery(["types", page], () => fetchTypes(page));
-  }, [page, queryClient]);
-
   const { types, links, isLoading, isError, refetch } = useTypes(page);
 
-  const handlePageChange = useCallback(
-    (newPage: number) => setPage(newPage),
-    []
-  );
-  const handleSelect = useCallback(() => {}, []);
-  const renderItem = useCallback(
-    (type: Type, children: React.ReactNode) => (
-      <Link href={`/types/${type.id}`} key={type.id} prefetch>
-        <div className="block h-full w-full">{children}</div>
-      </Link>
-    ),
-    []
+  // ✅ Prefetch للـ Types
+  React.useEffect(() => {
+    queryClient.prefetchQuery({
+      queryKey: ["types", page],
+      queryFn: () => fetchTypes(page),
+    });
+  }, [page, queryClient]);
+
+  // ✅ فانكشن السيرش (زي الكود الأول)
+  const handleSearch = async (value: string) => {
+    setQuery(value);
+    if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    if (!value) {
+      setResults([]);
+      setShowDropdown(false);
+      return;
+    }
+    timeoutRef.current = setTimeout(async () => {
+      try {
+        const res = await searchApi(value);
+        const flatRes =
+          Array.isArray(res) && Array.isArray(res[0]) ? res[0] : res;
+        setResults(flatRes);
+        setShowDropdown(true);
+      } catch {
+        setResults([]);
+        setShowDropdown(false);
+      }
+    }, 300);
+  };
+
+  // ✅ Helper
+  const getResultLink = (item: any): string => `/parts/${item.id || item._id}`;
+
+  const handlePageChange = (newPage: number) => setPage(newPage);
+  const handleSelect = () => {};
+
+  const renderTypeItem = (type: Type, children: React.ReactNode) => (
+    <Link href={`/types/${type.id}`} key={type.id} prefetch>
+      <div className="block h-full w-full">{children}</div>
+    </Link>
   );
 
   return (
@@ -73,41 +75,63 @@ export default function HomePageClient() {
           Browse Vehicle Parts
         </h1>
 
-        {/* ✅ Search Input */}
-        <div className="mb-6">
+        {/* ✅ Search Input + Dropdown */}
+        <div className="relative mb-6 w-full md:w-1/2">
           <input
             type="text"
-            placeholder="Search vehicle types..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full md:w-1/2 px-4 py-2 rounded-lg border focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm dark:bg-slate-800 dark:text-white"
+            value={query}
+            onChange={(e) => handleSearch(e.target.value)}
+            placeholder="Search..."
+            className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary text-base bg-white dark:bg-gray-800"
+            onFocus={() => query && setShowDropdown(true)}
+            onBlur={() => setTimeout(() => setShowDropdown(false), 200)}
           />
+          {showDropdown && results.length > 0 && (
+            <div className="absolute left-0 right-0 mt-2 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg shadow-lg z-50 max-h-72 overflow-y-auto">
+              {results.map((item, idx) => (
+                <a
+                  key={item.id || item._id || idx}
+                  href={getResultLink(item)}
+                  className="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-800 text-sm text-gray-900 dark:text-gray-100 cursor-pointer"
+                  onMouseDown={(e) => {
+                    e.preventDefault();
+                    setShowDropdown(false);
+                    router.push(getResultLink(item));
+                  }}
+                >
+                  <span className="font-semibold mr-2">
+                    [
+                    {[item.type, item.subtype, item.submodel, item.year]
+                      .filter(Boolean)
+                      .join(" - ")}
+                    ]
+                  </span>
+                  {item.name}
+                </a>
+              ))}
+            </div>
+          )}
         </div>
 
+        {/* ✅ لو مفيش بحث: اعرض الـ Types */}
         {isLoading ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {Array.from({ length: 8 }).map((_, i) => (
-              <div
-                key={i}
-                className="flex flex-col items-center justify-center bg-white dark:bg-gray-800 rounded-2xl shadow-md p-8 aspect-[4/3] animate-pulse"
-              >
-                <div className="w-full h-32 bg-gray-300 dark:bg-gray-700 rounded mb-4"></div>
-                <div className="h-4 w-2/3 bg-gray-300 dark:bg-gray-700 rounded"></div>
-              </div>
-            ))}
+          <div className="text-center text-gray-500">
+            Loading vehicle types...
           </div>
         ) : isError ? (
-          <ErrorFallback onRetry={refetch} />
-        ) : types.length === 0 ? (
-          <div className="text-gray-500 mt-6">No types found.</div>
+          <div className="text-center text-red-500">
+            Error loading vehicle types.
+            <button onClick={refetch} className="underline text-blue-500 ml-2">
+              Retry
+            </button>
+          </div>
         ) : (
           <TypesList
             types={types}
             links={links}
             onSelect={handleSelect}
             onPageChange={handlePageChange}
-            renderItem={renderItem}
-            searchTerm={searchTerm} // ✅ Added here
+            renderItem={renderTypeItem}
           />
         )}
       </div>

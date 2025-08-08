@@ -8,12 +8,13 @@ import React, {
   memo,
   createContext,
   useContext,
+  useRef,
 } from "react";
 import Link from "next/link";
 import { Moon, Sun } from "lucide-react";
 import Image from "next/image";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { search } from "../lib/api"; // ✅ API function
+import { search as searchApi } from "../lib/api";
 import { useRouter } from "next/navigation";
 
 const ThemeContext = createContext<{
@@ -23,25 +24,11 @@ const ThemeContext = createContext<{
 
 export const useTheme = () => useContext(ThemeContext);
 
-// ✅ Dynamic Link Generator
-export const getResultLink = (item: any) => {
-  if (!item || !item.type) return "/";
-  switch (item.type.toLowerCase()) {
-    case "type":
-      return `/types/${item.id || item._id}`;
-    case "model":
-      return `/models/${item.id || item._id}`;
-    case "submodel":
-      return `/submodels/${item.id || item._id}`;
-    case "modelyear":
-      return `/model-years/${item.id || item._id}`;
-    case "version":
-      return `/versions/${item.id || item._id}`;
-    case "part":
-      return `/parts/${item.id || item._id}`;
-    default:
-      return "/";
-  }
+// ✅ Helper function for dynamic links
+const getResultLink = (item: any): string => {
+  return `/types/${encodeURIComponent(item.type)}/models/${encodeURIComponent(
+    item.subtype
+  )}/submodels/${encodeURIComponent(item.submodel)}/years/${item.id}/parts`;
 };
 
 // ✅ SearchBar Component
@@ -49,84 +36,86 @@ const SearchBar = memo(() => {
   const { isDarkMode } = useTheme();
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<any[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [showDropdown, setShowDropdown] = useState(false);
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   const router = useRouter();
-  let timeoutId: NodeJS.Timeout;
 
-  const handleSearch = useCallback(async (value: string) => {
-    if (!value.trim()) {
+  const handleSearch = async (value: string) => {
+    setQuery(value);
+    if (timeoutRef.current) clearTimeout(timeoutRef.current);
+
+    if (!value) {
       setResults([]);
+      setShowDropdown(false);
       return;
     }
-    setLoading(true);
-  
-    try {
-      const data = await search(value);
-      console.log("Search API Result:", data); // ✅ للتأكد من الداتا
-      setResults(data || []);
-    } catch (err) {
-      console.error("Search error:", err);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
 
-  const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    setQuery(value);
-    clearTimeout(timeoutId);
-    timeoutId = setTimeout(() => {
-      handleSearch(value);
-    }, 500); // ✅ Debounce
+    timeoutRef.current = setTimeout(async () => {
+      try {
+        const res = await searchApi(value);
+        const flatRes =
+          Array.isArray(res) && Array.isArray(res[0]) ? res[0] : res;
+        console.log("🔍 Search API Response:", flatRes);
+        setResults(flatRes);
+        setShowDropdown(true);
+      } catch {
+        setResults([]);
+        setShowDropdown(false);
+      }
+    }, 300);
   };
 
   return (
-    <div className="relative">
+    <div className="relative w-64">
       <input
         type="text"
-        placeholder="Search cars..."
-        className={`px-4 py-2 rounded-lg border focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm ${
+        value={query}
+        onChange={(e) => handleSearch(e.target.value)}
+        placeholder="Search..."
+        className={`w-full px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm ${
           isDarkMode
             ? "bg-slate-800 text-white placeholder-gray-400"
             : "bg-white text-black placeholder-gray-500"
         }`}
-        value={query}
-        onChange={onChange}
+        onFocus={() => query && setShowDropdown(true)}
+        onBlur={() => setTimeout(() => setShowDropdown(false), 200)}
       />
-      {loading && (
-        <div className="absolute right-3 top-2 text-xs text-gray-400">
-          Loading...
-        </div>
-      )}
-      {results.length > 0 && (
-        <ul
-          className={`absolute z-50 w-full mt-2 rounded-lg shadow-lg max-h-64 overflow-auto ${
-            isDarkMode ? "bg-slate-800 text-white" : "bg-white text-black"
+      {showDropdown && results.length > 0 && (
+        <div
+          className={`absolute left-0 right-0 mt-2 rounded-lg shadow-lg z-50 max-h-72 overflow-y-auto ${
+            isDarkMode
+              ? "bg-slate-800 text-white border border-gray-700"
+              : "bg-white text-black border border-gray-200"
           }`}
         >
-          {results.map((item: any) => (
-            <li
-              key={item.id || item._id}
-              className="px-4 py-2 hover:bg-blue-500 hover:text-white cursor-pointer text-sm flex justify-between"
-              onClick={() => {
+          {results.map((item, idx) => (
+            <div
+              key={item.id || idx}
+              className="block px-4 py-2 hover:bg-blue-500 hover:text-white text-sm cursor-pointer"
+              onMouseDown={(e) => {
+                e.preventDefault();
+                setShowDropdown(false);
                 router.push(getResultLink(item));
-                setQuery("");
-                setResults([]);
               }}
             >
-              <span>{item.name || item.title || "Unnamed"}</span>
-              <span className="text-xs text-gray-400">
-                ({item.type || "Item"})
+              <span className="font-semibold mr-2">
+                [
+                {[item.type, item.subtype, item.submodel, item.year]
+                  .filter(Boolean)
+                  .join(" - ")}
+                ]
               </span>
-            </li>
+              {item.name || `${item.type} ${item.subtype}`}
+            </div>
           ))}
-        </ul>
+        </div>
       )}
     </div>
   );
 });
 SearchBar.displayName = "SearchBar";
 
+// ✅ Header with Search
 const Header = memo(() => {
   const { isDarkMode, toggleTheme } = useTheme();
 
@@ -153,13 +142,12 @@ const Header = memo(() => {
             </Link>
           </div>
 
-          {/* Navigation + Search + Toggle */}
+          {/* Navigation + Search + Theme Toggle */}
           <div className="flex flex-row items-center justify-center space-x-4 md:space-x-8">
             {/* ✅ SearchBar */}
-            <div className="hidden md:block w-64">
-              <SearchBar />
-            </div>
+            <SearchBar />
 
+            {/* Nav Links */}
             <nav className="flex space-x-4 md:space-x-6">
               <Link
                 href="/about"
@@ -172,7 +160,7 @@ const Header = memo(() => {
               </Link>
             </nav>
 
-            {/* Toggle Button */}
+            {/* Theme Toggle */}
             <button
               onClick={toggleTheme}
               className={`relative w-14 h-7 rounded-full transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
@@ -201,6 +189,7 @@ const Header = memo(() => {
 });
 Header.displayName = "Header";
 
+// ✅ RootLayout
 export default function RootLayout({
   children,
 }: {
@@ -234,11 +223,11 @@ export default function RootLayout({
   return (
     <html lang="en" className={isDarkMode ? "dark" : ""}>
       <body
-        className="transition-colors duration-300"
-        style={{
-          backgroundColor: "var(--bg-color)",
-          color: "var(--text-color)",
-        }}
+        className={`transition-colors duration-300 ${
+          isDarkMode
+            ? "bg-slate-900 text-white"
+            : "bg-gradient-to-b from-white to-gray-100 text-black"
+        }`}
       >
         <QueryClientProvider client={queryClient}>
           <ThemeContext.Provider value={{ isDarkMode, toggleTheme }}>
